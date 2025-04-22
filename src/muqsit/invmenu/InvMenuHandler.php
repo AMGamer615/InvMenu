@@ -7,7 +7,10 @@ namespace muqsit\invmenu;
 use InvalidArgumentException;
 use LogicException;
 use muqsit\invmenu\session\PlayerManager;
+use muqsit\invmenu\type\CustomSizedInvMenuType;
 use muqsit\invmenu\type\InvMenuTypeRegistry;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\network\mcpe\cache\StaticPacketCache;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
 
@@ -26,6 +29,18 @@ final class InvMenuHandler{
 		self::$type_registry = new InvMenuTypeRegistry();
 		self::$player_manager = new PlayerManager(self::getRegistrant());
 		Server::getInstance()->getPluginManager()->registerEvents(new InvMenuEventHandler(self::getPlayerManager()), $plugin);
+
+        $packet = StaticPacketCache::getInstance()->getAvailableActorIdentifiers();
+        $tag = $packet->identifiers->getRoot();
+        assert($tag instanceof CompoundTag);
+        $id_list = $tag->getListTag("idlist");
+        assert($id_list !== null);
+        $id_list->push(CompoundTag::create()
+            ->setString("bid", "")
+            ->setByte("hasspawnegg", 0)
+            ->setString("id", CustomSizedInvMenuType::ACTOR_NETWORK_ID)
+            ->setByte("summonable", 0)
+        );
 	}
 
 	public static function isRegistered() : bool{

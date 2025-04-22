@@ -13,6 +13,7 @@ use muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use muqsit\invmenu\transaction\InvMenuTransaction;
 use muqsit\invmenu\transaction\InvMenuTransactionResult;
 use muqsit\invmenu\transaction\SimpleInvMenuTransaction;
+use muqsit\invmenu\type\CustomSizedInvMenuType;
 use muqsit\invmenu\type\InvMenuType;
 use muqsit\invmenu\type\InvMenuTypeIds;
 use pocketmine\inventory\Inventory;
@@ -31,6 +32,16 @@ class InvMenu implements InvMenuTypeIds{
 	public static function create(string $identifier, ...$args) : InvMenu{
 		return new InvMenu(InvMenuHandler::getTypeRegistry()->get($identifier), ...$args);
 	}
+
+    public static function createCustomSize(int $size) : InvMenu{
+        static $ids_by_size = [];
+        if(!isset($ids_by_size[$size])){
+            $id = self::TYPE_DYNAMIC_PREFIX . $size;
+            InvMenuHandler::getTypeRegistry()->register($id, CustomSizedInvMenuType::ofSize($size));
+            $ids_by_size[$size] = $id;
+        }
+        return InvMenu::create($ids_by_size[$size]);
+    }
 
 	/**
 	 * @param (Closure(DeterministicInvMenuTransaction) : void)|null $listener
